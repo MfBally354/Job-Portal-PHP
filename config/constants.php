@@ -4,7 +4,7 @@
 // ==========================================
 
 // Base URL
-define('BASE_URL', 'http://localhost/job-portal/');
+define('BASE_URL', 'http://192.168.1.16/job-portal/');
 
 // Upload Paths
 define('UPLOAD_PATH', dirname(__DIR__) . '/assets/uploads/');
