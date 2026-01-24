@@ -2,7 +2,7 @@
 // Konfigurasi Database
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASS', '#semarangwhj354iqbal#');
+define('DB_PASS', '');
 define('DB_NAME', 'job_portal');
 
 // Membuat koneksi
