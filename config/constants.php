@@ -4,7 +4,7 @@
 // ==========================================
 
 // Base URL
-define('BASE_URL', 'http://localhost/job-portal-v2/');
+define('BASE_URL', 'http://localhost/job-portal/');
 
 // Upload Paths
 define('UPLOAD_PATH', dirname(__DIR__) . '/assets/uploads/');
