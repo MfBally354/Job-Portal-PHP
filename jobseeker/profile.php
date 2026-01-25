@@ -578,4 +578,194 @@ $page_title = 'My Profile';
                             </div>
                             <div class="col-12 mb-3">
                                 <label class="form-label">Address</label>
-                                <textarea class="form-control
+                                <textarea class="form-control<function_calls>
+<invoke name="artifacts">
+<parameter name="command">update</parameter>
+<parameter name="id">jobseeker_profile</parameter>
+<parameter name="old_str">                                <textarea class="form-control</parameter>
+<parameter name="new_str">                                <textarea class="form-control" name="address" rows="2"><?php echo htmlspecialchars($profile['address'] ?? ''); ?></textarea>
+</div>
+<div class="col-12 mb-3">
+<label class="form-label">Bio</label>
+<textarea class="form-control" name="bio" rows="4"><?php echo htmlspecialchars($profile['bio'] ?? ''); ?></textarea>
+</div>
+<div class="col-md-6 mb-3">
+<label class="form-label">LinkedIn URL</label>
+<input type="url" class="form-control" name="linkedin_url" value="<?php echo htmlspecialchars($profile['linkedin_url'] ?? ''); ?>">
+</div>
+<div class="col-md-6 mb-3">
+<label class="form-label">Portfolio URL</label>
+<input type="url" class="form-control" name="portfolio_url" value="<?php echo htmlspecialchars($profile['portfolio_url'] ?? ''); ?>">
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+<button type="submit" class="btn btn-primary">Save Changes</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+<!-- Add Experience Modal -->
+<div class="modal fade" id="addExperienceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST">
+                <input type="hidden" name="action" value="add_experience">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Work Experience</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Job Title</label>
+                            <input type="text" class="form-control" name="job_title" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" name="company_name" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="exp_location">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" name="start_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" name="end_date" id="exp_end_date">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="is_current" id="exp_current" onchange="toggleEndDate(this, 'exp_end_date')">
+                                <label class="form-check-label" for="exp_current">I currently work here</label>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Experience</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Education Modal -->
+<div class="modal fade" id="addEducationModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST">
+                <input type="hidden" name="action" value="add_education">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Education</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Degree</label>
+                            <select class="form-select" name="degree" required>
+                                <option value="">Select Degree</option>
+                                <?php foreach(EDUCATION_LEVELS as $key => $val): ?>
+                                    <option value="<?php echo $key; ?>"><?php echo $val; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Institution</label>
+                            <input type="text" class="form-control" name="institution" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Field of Study</label>
+                            <input type="text" class="form-control" name="field_of_study">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" name="edu_start_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Date</label>
+                            <input type="date" class="form-control" name="edu_end_date" id="edu_end_date">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="edu_is_current" id="edu_current" onchange="toggleEndDate(this, 'edu_end_date')">
+                                <label class="form-check-label" for="edu_current">Currently studying here</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">GPA (Optional)</label>
+                            <input type="number" step="0.01" class="form-control" name="gpa">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="edu_description" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Education</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Skill Modal -->
+<div class="modal fade" id="addSkillModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST">
+                <input type="hidden" name="action" value="add_skill">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Skill</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Skill Name</label>
+                        <input type="text" class="form-control" name="skill_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Proficiency Level</label>
+                        <select class="form-select" name="skill_level" required>
+                            <?php foreach(SKILL_LEVELS as $key => $val): ?>
+                                <option value="<?php echo $key; ?>"><?php echo $val; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Years of Experience</label>
+                        <input type="number" class="form-control" name="years_of_experience" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Skill</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function toggleEndDate(checkbox, fieldId) {
+        const field = document.getElementById(fieldId);
+        field.disabled = checkbox.checked;
+        if(checkbox.checked) field.value = '';
+    }
+</script>
+</body>
+</html</parameter>
