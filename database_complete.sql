@@ -225,7 +225,7 @@ CREATE TABLE job_views (
 INSERT INTO users (name, email, password, role, is_active, email_verified) VALUES 
 ('Admin', 'admin@jobportal.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin', 1, 1);
 
--- Insert kategori default
+-- Insert kategori defaulS
 INSERT INTO job_categories (name, slug, icon, description) VALUES
 ('IT & Software', 'it-software', 'fa-laptop-code', 'Pekerjaan di bidang teknologi informasi'),
 ('Marketing', 'marketing', 'fa-bullhorn', 'Pekerjaan di bidang pemasaran'),
