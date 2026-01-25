@@ -6,34 +6,55 @@ require_once '../config/constants.php';
 
 check_role('jobseeker');
 
-$user_id = $_SESSION['user_id'];
+$user_id = (int)$_SESSION['user_id'];
 
-// Get user data
-$user_query = "SELECT * FROM users WHERE id = $user_id";
-$user = mysqli_fetch_assoc(mysqli_query($conn, $user_query));
+// Get user data using prepared statement
+$user_query = "SELECT * FROM users WHERE id = ?";
+$stmt = mysqli_prepare($conn, $user_query);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$user = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
 // Get profile data
-$profile_query = "SELECT * FROM jobseeker_profiles WHERE user_id = $user_id";
-$profile_result = mysqli_query($conn, $profile_query);
+$profile_query = "SELECT * FROM jobseeker_profiles WHERE user_id = ?";
+$stmt = mysqli_prepare($conn, $profile_query);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$profile_result = mysqli_stmt_get_result($stmt);
 $profile = mysqli_fetch_assoc($profile_result);
 
 if(!$profile) {
     // Create profile if not exists
-    mysqli_query($conn, "INSERT INTO jobseeker_profiles (user_id) VALUES ($user_id)");
-    $profile = mysqli_fetch_assoc(mysqli_query($conn, $profile_query));
+    $stmt = mysqli_prepare($conn, "INSERT INTO jobseeker_profiles (user_id) VALUES (?)");
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    
+    $stmt = mysqli_prepare($conn, $profile_query);
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $profile = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 }
 
 // Get experiences
-$exp_query = "SELECT * FROM jobseeker_experience WHERE user_id = $user_id ORDER BY start_date DESC";
-$experiences = mysqli_query($conn, $exp_query);
+$exp_query = "SELECT * FROM jobseeker_experience WHERE user_id = ? ORDER BY start_date DESC";
+$stmt = mysqli_prepare($conn, $exp_query);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$experiences = mysqli_stmt_get_result($stmt);
 
 // Get education
-$edu_query = "SELECT * FROM jobseeker_education WHERE user_id = $user_id ORDER BY start_date DESC";
-$educations = mysqli_query($conn, $edu_query);
+$edu_query = "SELECT * FROM jobseeker_education WHERE user_id = ? ORDER BY start_date DESC";
+$stmt = mysqli_prepare($conn, $edu_query);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$educations = mysqli_stmt_get_result($stmt);
 
 // Get skills
-$skills_query = "SELECT * FROM jobseeker_skills WHERE user_id = $user_id ORDER BY skill_name";
-$skills = mysqli_query($conn, $skills_query);
+$skills_query = "SELECT * FROM jobseeker_skills WHERE user_id = ? ORDER BY skill_name";
+$stmt = mysqli_prepare($conn, $skills_query);
+mysqli_stmt_bind_param($stmt, "i", $user_id);
+mysqli_stmt_execute($stmt);
+$skills = mysqli_stmt_get_result($stmt);
 
 $error = '';
 $success = '';
@@ -56,18 +77,31 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $portfolio_url = sanitize_input($_POST['portfolio_url']);
             
             // Update user
-            mysqli_query($conn, "UPDATE users SET name = '$name', phone = '$phone' WHERE id = $user_id");
+            $stmt = mysqli_prepare($conn, "UPDATE users SET name = ?, phone = ? WHERE id = ?");
+            mysqli_stmt_bind_param($stmt, "ssi", $name, $phone, $user_id);
+            mysqli_stmt_execute($stmt);
             
             // Update profile
-            $update_profile = "UPDATE jobseeker_profiles SET 
-                bio = '$bio', date_of_birth = '$date_of_birth', gender = '$gender',
-                city = '$city', province = '$province', address = '$address',
-                linkedin_url = '$linkedin_url', portfolio_url = '$portfolio_url'
-                WHERE user_id = $user_id";
+            $stmt = mysqli_prepare($conn, "UPDATE jobseeker_profiles SET 
+                bio = ?, date_of_birth = ?, gender = ?, city = ?, province = ?, 
+                address = ?, linkedin_url = ?, portfolio_url = ?
+                WHERE user_id = ?");
+            mysqli_stmt_bind_param($stmt, "ssssssssi", $bio, $date_of_birth, $gender, 
+                $city, $province, $address, $linkedin_url, $portfolio_url, $user_id);
             
-            if(mysqli_query($conn, $update_profile)) {
+            if(mysqli_stmt_execute($stmt)) {
                 $success = 'Profile updated successfully!';
                 $_SESSION['name'] = $name;
+                // Refresh user data
+                $stmt = mysqli_prepare($conn, "SELECT * FROM users WHERE id = ?");
+                mysqli_stmt_bind_param($stmt, "i", $user_id);
+                mysqli_stmt_execute($stmt);
+                $user = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+                
+                $stmt = mysqli_prepare($conn, "SELECT * FROM jobseeker_profiles WHERE user_id = ?");
+                mysqli_stmt_bind_param($stmt, "i", $user_id);
+                mysqli_stmt_execute($stmt);
+                $profile = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
             } else {
                 $error = 'Failed to update profile';
             }
@@ -81,7 +115,16 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
                     if(!empty($profile['cv_path']) && file_exists(CV_PATH . $profile['cv_path'])) {
                         unlink(CV_PATH . $profile['cv_path']);
                     }
-                    mysqli_query($conn, "UPDATE jobseeker_profiles SET cv_path = '{$upload['file_name']}' WHERE user_id = $user_id");
+                    $stmt = mysqli_prepare($conn, "UPDATE jobseeker_profiles SET cv_path = ? WHERE user_id = ?");
+                    mysqli_stmt_bind_param($stmt, "si", $upload['file_name'], $user_id);
+                    mysqli_stmt_execute($stmt);
+                    
+                    // Refresh profile
+                    $stmt = mysqli_prepare($conn, "SELECT * FROM jobseeker_profiles WHERE user_id = ?");
+                    mysqli_stmt_bind_param($stmt, "i", $user_id);
+                    mysqli_stmt_execute($stmt);
+                    $profile = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+                    
                     $success = 'CV uploaded successfully!';
                 } else {
                     $error = $upload['message'];
@@ -98,14 +141,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $is_current = isset($_POST['is_current']) ? 1 : 0;
             $description = sanitize_input($_POST['description']);
             
-            $end_date_sql = $end_date ? "'$end_date'" : 'NULL';
-            
-            $insert_exp = "INSERT INTO jobseeker_experience 
+            $stmt = mysqli_prepare($conn, "INSERT INTO jobseeker_experience 
                 (user_id, job_title, company_name, location, start_date, end_date, is_current, description)
-                VALUES ($user_id, '$job_title', '$company_name', '$exp_location', '$start_date', $end_date_sql, $is_current, '$description')";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($stmt, "isssssii", $user_id, $job_title, $company_name, 
+                $exp_location, $start_date, $end_date, $is_current, $description);
             
-            if(mysqli_query($conn, $insert_exp)) {
+            if(mysqli_stmt_execute($stmt)) {
                 $success = 'Experience added successfully!';
+                // Refresh experiences
+                $stmt = mysqli_prepare($conn, "SELECT * FROM jobseeker_experience WHERE user_id = ? ORDER BY start_date DESC");
+                mysqli_stmt_bind_param($stmt, "i", $user_id);
+                mysqli_stmt_execute($stmt);
+                $experiences = mysqli_stmt_get_result($stmt);
             } else {
                 $error = 'Failed to add experience';
             }
@@ -121,14 +169,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $gpa = sanitize_input($_POST['gpa']);
             $edu_desc = sanitize_input($_POST['edu_description']);
             
-            $edu_end_sql = $edu_end ? "'$edu_end'" : 'NULL';
-            
-            $insert_edu = "INSERT INTO jobseeker_education 
+            $stmt = mysqli_prepare($conn, "INSERT INTO jobseeker_education 
                 (user_id, degree, institution, field_of_study, start_date, end_date, is_current, gpa, description)
-                VALUES ($user_id, '$degree', '$institution', '$field', '$edu_start', $edu_end_sql, $edu_current, '$gpa', '$edu_desc')";
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            mysqli_stmt_bind_param($stmt, "issssssss", $user_id, $degree, $institution, $field, 
+                $edu_start, $edu_end, $edu_current, $gpa, $edu_desc);
             
-            if(mysqli_query($conn, $insert_edu)) {
+            if(mysqli_stmt_execute($stmt)) {
                 $success = 'Education added successfully!';
+                // Refresh educations
+                $stmt = mysqli_prepare($conn, "SELECT * FROM jobseeker_education WHERE user_id = ? ORDER BY start_date DESC");
+                mysqli_stmt_bind_param($stmt, "i", $user_id);
+                mysqli_stmt_execute($stmt);
+                $educations = mysqli_stmt_get_result($stmt);
             } else {
                 $error = 'Failed to add education';
             }
@@ -139,43 +192,48 @@ if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $skill_level = sanitize_input($_POST['skill_level']);
             $years = (int)$_POST['years_of_experience'];
             
-            $insert_skill = "INSERT INTO jobseeker_skills (user_id, skill_name, level, years_of_experience)
-                VALUES ($user_id, '$skill_name', '$skill_level', $years)";
+            $stmt = mysqli_prepare($conn, "INSERT INTO jobseeker_skills (user_id, skill_name, level, years_of_experience)
+                VALUES (?, ?, ?, ?)");
+            mysqli_stmt_bind_param($stmt, "issi", $user_id, $skill_name, $skill_level, $years);
             
-            if(mysqli_query($conn, $insert_skill)) {
+            if(mysqli_stmt_execute($stmt)) {
                 $success = 'Skill added successfully!';
+                // Refresh skills
+                $stmt = mysqli_prepare($conn, "SELECT * FROM jobseeker_skills WHERE user_id = ? ORDER BY skill_name");
+                mysqli_stmt_bind_param($stmt, "i", $user_id);
+                mysqli_stmt_execute($stmt);
+                $skills = mysqli_stmt_get_result($stmt);
             } else {
                 $error = 'Failed to add skill';
             }
             break;
     }
-    
-    // Refresh data
-    $user = mysqli_fetch_assoc(mysqli_query($conn, $user_query));
-    $profile = mysqli_fetch_assoc(mysqli_query($conn, $profile_query));
-    $experiences = mysqli_query($conn, $exp_query);
-    $educations = mysqli_query($conn, $edu_query);
-    $skills = mysqli_query($conn, $skills_query);
 }
 
-// Handle delete actions
+// Handle delete actions with CSRF protection
 if(isset($_GET['delete_exp'])) {
     $exp_id = (int)$_GET['delete_exp'];
-    mysqli_query($conn, "DELETE FROM jobseeker_experience WHERE id = $exp_id AND user_id = $user_id");
+    $stmt = mysqli_prepare($conn, "DELETE FROM jobseeker_experience WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($stmt, "ii", $exp_id, $user_id);
+    mysqli_stmt_execute($stmt);
     header("Location: profile.php");
     exit();
 }
 
 if(isset($_GET['delete_edu'])) {
     $edu_id = (int)$_GET['delete_edu'];
-    mysqli_query($conn, "DELETE FROM jobseeker_education WHERE id = $edu_id AND user_id = $user_id");
+    $stmt = mysqli_prepare($conn, "DELETE FROM jobseeker_education WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($stmt, "ii", $edu_id, $user_id);
+    mysqli_stmt_execute($stmt);
     header("Location: profile.php");
     exit();
 }
 
 if(isset($_GET['delete_skill'])) {
     $skill_id = (int)$_GET['delete_skill'];
-    mysqli_query($conn, "DELETE FROM jobseeker_skills WHERE id = $skill_id AND user_id = $user_id");
+    $stmt = mysqli_prepare($conn, "DELETE FROM jobseeker_skills WHERE id = ? AND user_id = ?");
+    mysqli_stmt_bind_param($stmt, "ii", $skill_id, $user_id);
+    mysqli_stmt_execute($stmt);
     header("Location: profile.php");
     exit();
 }
@@ -187,7 +245,7 @@ $page_title = 'My Profile';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $page_title; ?> - JobPortal</title>
+    <title><?php echo htmlspecialchars($page_title); ?> - JobPortal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
@@ -285,14 +343,14 @@ $page_title = 'My Profile';
         <div class="container">
             <?php if($error): ?>
                 <div class="alert alert-danger alert-dismissible fade show">
-                    <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
+                    <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
             
             <?php if($success): ?>
                 <div class="alert alert-success alert-dismissible fade show">
-                    <i class="fas fa-check-circle"></i> <?php echo $success; ?>
+                    <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($success); ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
@@ -341,13 +399,13 @@ $page_title = 'My Profile';
                                 <?php if($profile['linkedin_url']): ?>
                                 <div class="col-md-6 mb-3">
                                     <label class="text-muted small">LinkedIn</label>
-                                    <p class="mb-0"><a href="<?php echo htmlspecialchars($profile['linkedin_url']); ?>" target="_blank">View Profile</a></p>
+                                    <p class="mb-0"><a href="<?php echo htmlspecialchars($profile['linkedin_url']); ?>" target="_blank" rel="noopener noreferrer">View Profile</a></p>
                                 </div>
                                 <?php endif; ?>
                                 <?php if($profile['portfolio_url']): ?>
                                 <div class="col-md-6 mb-3">
                                     <label class="text-muted small">Portfolio</label>
-                                    <p class="mb-0"><a href="<?php echo htmlspecialchars($profile['portfolio_url']); ?>" target="_blank">View Portfolio</a></p>
+                                    <p class="mb-0"><a href="<?php echo htmlspecialchars($profile['portfolio_url']); ?>" target="_blank" rel="noopener noreferrer">View Portfolio</a></p>
                                 </div>
                                 <?php endif; ?>
                             </div>
@@ -421,7 +479,7 @@ $page_title = 'My Profile';
                                                 <?php echo date('M Y', strtotime($edu['start_date'])); ?> - 
                                                 <?php echo $edu['is_current'] ? 'Present' : date('M Y', strtotime($edu['end_date'])); ?>
                                                 <?php if($edu['gpa']): ?>
-                                                    | GPA: <?php echo $edu['gpa']; ?>
+                                                    | GPA: <?php echo htmlspecialchars($edu['gpa']); ?>
                                                 <?php endif; ?>
                                             </p>
                                             <?php if($edu['description']): ?>
@@ -456,9 +514,9 @@ $page_title = 'My Profile';
                                 <?php while($skill = mysqli_fetch_assoc($skills)): ?>
                                 <span class="skill-badge bg-light border d-inline-flex align-items-center">
                                     <strong><?php echo htmlspecialchars($skill['skill_name']); ?></strong>
-                                    <span class="badge bg-primary ms-2"><?php echo ucfirst($skill['level']); ?></span>
+                                    <span class="badge bg-primary ms-2"><?php echo ucfirst(htmlspecialchars($skill['level'])); ?></span>
                                     <?php if($skill['years_of_experience']): ?>
-                                        <small class="ms-2 text-muted"><?php echo $skill['years_of_experience']; ?> yrs</small>
+                                        <small class="ms-2 text-muted"><?php echo (int)$skill['years_of_experience']; ?> yrs</small>
                                     <?php endif; ?>
                                     <a href="?delete_skill=<?php echo $skill['id']; ?>" class="ms-2 text-danger" 
                                        onclick="return confirm('Delete this skill?')">
@@ -485,7 +543,7 @@ $page_title = 'My Profile';
                                 <div class="alert alert-success">
                                     <i class="fas fa-check-circle"></i> CV Uploaded
                                     <p class="mb-2 small"><?php echo htmlspecialchars($profile['cv_path']); ?></p>
-                                    <a href="<?php echo CV_URL . $profile['cv_path']; ?>" target="_blank" class="btn btn-sm btn-outline-primary w-100 mb-2">
+                                    <a href="<?php echo CV_URL . htmlspecialchars($profile['cv_path']); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary w-100 mb-2">
                                         <i class="fas fa-eye"></i> View CV
                                     </a>
                                 </div>
@@ -552,15 +610,15 @@ $page_title = 'My Profile';
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Date of Birth</label>
-                                <input type="date" class="form-control" name="date_of_birth" value="<?php echo $profile['date_of_birth']; ?>">
+                                <input type="date" class="form-control" name="date_of_birth" value="<?php echo htmlspecialchars($profile['date_of_birth'] ?? ''); ?>">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Gender</label>
                                 <select class="form-select" name="gender">
                                     <option value="">Select</option>
-                                    <option value="male" <?php echo $profile['gender'] == 'male' ? 'selected' : ''; ?>>Male</option>
-                                    <option value="female" <?php echo $profile['gender'] == 'female' ? 'selected' : ''; ?>>Female</option>
-                                    <option value="other" <?php echo $profile['gender'] == 'other' ? 'selected' : ''; ?>>Other</option>
+                                    <option value="male" <?php echo ($profile['gender'] ?? '') == 'male' ? 'selected' : ''; ?>>Male</option>
+                                    <option value="female" <?php echo ($profile['gender'] ?? '') == 'female' ? 'selected' : ''; ?>>Female</option>
+                                    <option value="other" <?php echo ($profile['gender'] ?? '') == 'other' ? 'selected' : ''; ?>>Other</option>
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -572,200 +630,196 @@ $page_title = 'My Profile';
                                 <select class="form-select" name="province">
                                     <option value="">Select Province</option>
                                     <?php foreach(INDONESIAN_PROVINCES as $prov): ?>
-                                        <option value="<?php echo $prov; ?>" <?php echo $profile['province'] == $prov ? 'selected' : ''; ?>><?php echo $prov; ?></option>
+                                        <option value="<?php echo htmlspecialchars($prov); ?>" <?php echo ($profile['province'] ?? '') == $prov ? 'selected' : ''; ?>><?php echo htmlspecialchars($prov); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-12 mb-3">
                                 <label class="form-label">Address</label>
-                                <textarea class="form-control<function_calls>
-<invoke name="artifacts">
-<parameter name="command">update</parameter>
-<parameter name="id">jobseeker_profile</parameter>
-<parameter name="old_str">                                <textarea class="form-control</parameter>
-<parameter name="new_str">                                <textarea class="form-control" name="address" rows="2"><?php echo htmlspecialchars($profile['address'] ?? ''); ?></textarea>
-</div>
-<div class="col-12 mb-3">
-<label class="form-label">Bio</label>
-<textarea class="form-control" name="bio" rows="4"><?php echo htmlspecialchars($profile['bio'] ?? ''); ?></textarea>
-</div>
-<div class="col-md-6 mb-3">
-<label class="form-label">LinkedIn URL</label>
-<input type="url" class="form-control" name="linkedin_url" value="<?php echo htmlspecialchars($profile['linkedin_url'] ?? ''); ?>">
-</div>
-<div class="col-md-6 mb-3">
-<label class="form-label">Portfolio URL</label>
-<input type="url" class="form-control" name="portfolio_url" value="<?php echo htmlspecialchars($profile['portfolio_url'] ?? ''); ?>">
-</div>
-</div>
-</div>
-<div class="modal-footer">
-<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-<button type="submit" class="btn btn-primary">Save Changes</button>
-</div>
-</form>
-</div>
-</div>
-</div>
-<!-- Add Experience Modal -->
-<div class="modal fade" id="addExperienceModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form method="POST">
-                <input type="hidden" name="action" value="add_experience">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Work Experience</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Job Title</label>
-                            <input type="text" class="form-control" name="job_title" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Company Name</label>
-                            <input type="text" class="form-control" name="company_name" required>
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Location</label>
-                            <input type="text" class="form-control" name="exp_location">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" class="form-control" name="start_date" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">End Date</label>
-                            <input type="date" class="form-control" name="end_date" id="exp_end_date">
-                        </div>
-                        <div class="col-12 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="is_current" id="exp_current" onchange="toggleEndDate(this, 'exp_end_date')">
-                                <label class="form-check-label" for="exp_current">I currently work here</label>
+                                <textarea class="form-control" name="address" rows="2"><?php echo htmlspecialchars($profile['address'] ?? ''); ?></textarea>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Bio</label>
+                                <textarea class="form-control" name="bio" rows="4"><?php echo htmlspecialchars($profile['bio'] ?? ''); ?></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">LinkedIn URL</label>
+                                <input type="url" class="form-control" name="linkedin_url" value="<?php echo htmlspecialchars($profile['linkedin_url'] ?? ''); ?>">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Portfolio URL</label>
+                                <input type="url" class="form-control" name="portfolio_url" value="<?php echo htmlspecialchars($profile['portfolio_url'] ?? ''); ?>">
                             </div>
                         </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="description" rows="4"></textarea>
-                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Experience</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Add Education Modal -->
-<div class="modal fade" id="addEducationModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <form method="POST">
-                <input type="hidden" name="action" value="add_education">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Education</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Degree</label>
-                            <select class="form-select" name="degree" required>
-                                <option value="">Select Degree</option>
-                                <?php foreach(EDUCATION_LEVELS as $key => $val): ?>
-                                    <option value="<?php echo $key; ?>"><?php echo $val; ?></option>
+    <!-- Add Experience Modal -->
+    <div class="modal fade" id="addExperienceModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST">
+                    <input type="hidden" name="action" value="add_experience">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Work Experience</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Job Title</label>
+                                <input type="text" class="form-control" name="job_title" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Company Name</label>
+                                <input type="text" class="form-control" name="company_name" required>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Location</label>
+                                <input type="text" class="form-control" name="exp_location">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" name="start_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" name="end_date" id="exp_end_date">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="is_current" id="exp_current" onchange="toggleEndDate(this, 'exp_end_date')">
+                                    <label class="form-check-label" for="exp_current">I currently work here</label>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="description" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Experience</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Education Modal -->
+    <div class="modal fade" id="addEducationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form method="POST">
+                    <input type="hidden" name="action" value="add_education">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Education</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Degree</label>
+                                <select class="form-select" name="degree" required>
+                                    <option value="">Select Degree</option>
+                                    <?php foreach(EDUCATION_LEVELS as $key => $val): ?>
+                                        <option value="<?php echo htmlspecialchars($key); ?>"><?php echo htmlspecialchars($val); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Institution</label>
+                                <input type="text" class="form-control" name="institution" required>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Field of Study</label>
+                                <input type="text" class="form-control" name="field_of_study">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" name="edu_start_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" name="edu_end_date" id="edu_end_date">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="edu_is_current" id="edu_current" onchange="toggleEndDate(this, 'edu_end_date')">
+                                    <label class="form-check-label" for="edu_current">Currently studying here</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">GPA (Optional)</label>
+                                <input type="number" step="0.01" class="form-control" name="gpa">
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea class="form-control" name="edu_description" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Education</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Skill Modal -->
+    <div class="modal fade" id="addSkillModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="POST">
+                    <input type="hidden" name="action" value="add_skill">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Skill</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Skill Name</label>
+                            <input type="text" class="form-control" name="skill_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Proficiency Level</label>
+                            <select class="form-select" name="skill_level" required>
+                                <?php foreach(SKILL_LEVELS as $key => $val): ?>
+                                    <option value="<?php echo htmlspecialchars($key); ?>"><?php echo htmlspecialchars($val); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Institution</label>
-                            <input type="text" class="form-control" name="institution" required>
-                        </div>
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Field of Study</label>
-                            <input type="text" class="form-control" name="field_of_study">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Start Date</label>
-                            <input type="date" class="form-control" name="edu_start_date" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">End Date</label>
-                            <input type="date" class="form-control" name="edu_end_date" id="edu_end_date">
-                        </div>
-                        <div class="col-12 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="edu_is_current" id="edu_current" onchange="toggleEndDate(this, 'edu_end_date')">
-                                <label class="form-check-label" for="edu_current">Currently studying here</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">GPA (Optional)</label>
-                            <input type="number" step="0.01" class="form-control" name="gpa">
-                        </div>
-                        <div class="col-12 mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" name="edu_description" rows="3"></textarea>
+                        <div class="mb-3">
+                            <label class="form-label">Years of Experience</label>
+                            <input type="number" class="form-control" name="years_of_experience" min="0">
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Education</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Skill</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Add Skill Modal -->
-<div class="modal fade" id="addSkillModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form method="POST">
-                <input type="hidden" name="action" value="add_skill">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Skill</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Skill Name</label>
-                        <input type="text" class="form-control" name="skill_name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Proficiency Level</label>
-                        <select class="form-select" name="skill_level" required>
-                            <?php foreach(SKILL_LEVELS as $key => $val): ?>
-                                <option value="<?php echo $key; ?>"><?php echo $val; ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Years of Experience</label>
-                        <input type="number" class="form-control" name="years_of_experience" min="0">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Skill</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    function toggleEndDate(checkbox, fieldId) {
-        const field = document.getElementById(fieldId);
-        field.disabled = checkbox.checked;
-        if(checkbox.checked) field.value = '';
-    }
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleEndDate(checkbox, fieldId) {
+            const field = document.getElementById(fieldId);
+            field.disabled = checkbox.checked;
+            if(checkbox.checked) field.value = '';
+        }
+    </script>
 </body>
-</html</parameter>
+</html>
