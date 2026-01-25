@@ -1,6 +1,6 @@
 -- Database Job Portal - Lengkap
 CREATE DATABASE IF NOT EXISTS job_portal_v2;
-USE job_portal_v2;
+USE job_portal;
 
 -- Tabel users
 CREATE TABLE users (
