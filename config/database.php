@@ -4,7 +4,7 @@
 // config/database.php
 // ==========================================
 define('DB_HOST', 'localhost');
-define('DB_USER', 'iqbal');
+define('DB_USER', 'root');
 define('DB_PASS', '#semarangwhj35iqbal#');
 define('DB_NAME', 'job_portal');
 
