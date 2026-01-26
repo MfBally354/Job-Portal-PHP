@@ -1,6 +1,6 @@
 <?php
 // ==========================================
-// DATABASE.PHP - Connection File
+// DATABASE.PHP - Connection File: Database yang akan dikoneksikan di mysql atau phpmyadmin
 // config/database.php
 // ==========================================
 define('DB_HOST', 'localhost');
