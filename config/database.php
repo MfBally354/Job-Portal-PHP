@@ -18,7 +18,7 @@ if ($isDocker) {
 }
 
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', '[Isi dengan password anda]');
 define('DB_NAME', 'job_portal');
 define('DB_CHARSET', 'utf8mb4');
 
