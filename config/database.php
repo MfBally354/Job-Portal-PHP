@@ -121,3 +121,4 @@ if (!$conn) {
     die("Failed to connect to database after $maxRetries attempts");
 }
 ?>
+
