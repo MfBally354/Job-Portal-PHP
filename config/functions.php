@@ -251,6 +251,63 @@ function paginate($query, $per_page = 10) {
     ];
 }
 
+/**
+ * Function paginate dengan support JOIN
+ * Mengatasi duplicate column dengan SELECT spesifik columns
+ */
+function paginate_with_join($select_columns, $from_clause, $where = '', $order = 'id DESC', $per_page = 10) {
+    global $conn;
+    
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    $offset = ($page - 1) * $per_page;
+    
+    // Build the base query
+    $base_query = "FROM $from_clause";
+    if (!empty($where)) {
+        $base_query .= " WHERE $where";
+    }
+    
+    // Get total records
+    $count_query = "SELECT COUNT(DISTINCT " . explode(',', $select_columns)[0] . ") as total $base_query";
+    $count_result = mysqli_query($conn, $count_query);
+    
+    if (!$count_result) {
+        error_log("Paginate count query error: " . mysqli_error($conn));
+        return false;
+    }
+    
+    $count_row = mysqli_fetch_assoc($count_result);
+    $total = $count_row['total'];
+    $total_pages = ceil($total / $per_page);
+    
+    // Get paginated data dengan kolom spesifik
+    $data_query = "SELECT $select_columns $base_query ORDER BY $order LIMIT $per_page OFFSET $offset";
+    $data_result = mysqli_query($conn, $data_query);
+    
+    if (!$data_result) {
+        error_log("Paginate data query error: " . mysqli_error($conn));
+        error_log("Query: $data_query");
+        return false;
+    }
+    
+    $data = [];
+    while ($row = mysqli_fetch_assoc($data_result)) {
+        $data[] = $row;
+    }
+    
+    return [
+        'data' => $data,
+        'pagination' => [
+            'current_page' => $page,
+            'total_pages' => $total_pages,
+            'total_records' => $total,
+            'per_page' => $per_page,
+            'has_prev' => $page > 1,
+            'has_next' => $page < $total_pages
+        ]
+    ];
+}
+
 // Render pagination
 function render_pagination($current_page, $total_pages, $base_url) {
     if($total_pages <= 1) return '';
