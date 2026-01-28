@@ -462,7 +462,7 @@ Butuh bantuan? Hubungi kami:
 
 - 📧 Email: support@jobportal.com
 - 💬 Discord: [Join our server](https://discord.gg/jobportal)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/Job-Portal/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/Job-Portal-PHP/issues)
 - 📖 Docs: [Documentation](https://docs.jobportal.com)
 
 ---
