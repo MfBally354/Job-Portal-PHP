@@ -167,7 +167,7 @@ mysql -u root
 CREATE DATABASE job_portal;
 
 # Import database
-mysql -u root - job_portal < database_complete.sql
+mysql -u root  job_portal < database_complete.sql
 ```
 
 #### 3. Konfigurasi Database
