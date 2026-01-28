@@ -161,13 +161,13 @@ cd job-portal
 #### 2. Setup Database
 ```bash
 # Login ke MySQL
-mysql -u root 
+mysql -u root
 
 # Buat database
 CREATE DATABASE job_portal;
 
 # Import database
-mysql -u root -p job_portal < database_complete.sql
+mysql -u root - job_portal < database_complete.sql
 ```
 
 #### 3. Konfigurasi Database
