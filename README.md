@@ -54,7 +54,8 @@ JobPortal adalah platform web-based yang dirancang untuk memudahkan pencari kerj
 
 <div align="center">
 
-![Employer Features](docs/images/employer-features.png)
+<img width="1920" height="1080" alt="Screenshot (671)" src="https://github.com/user-attachments/assets/13c3751b-5762-48bf-922f-61560c3a9fdd" />
+
 
 </div>
 
