@@ -86,7 +86,8 @@ JobPortal adalah platform web-based yang dirancang untuk memudahkan pencari kerj
 ## 🖼️ Screenshots
 
 ### Landing Page
-![Landing Page](docs/screenshots/landing-page.png)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/4c9e60c7-2eb5-4393-8e71-6d4f1e43ca65" />
+
 
 ### Browse Jobs
 ![Browse Jobs](docs/screenshots/browse-jobs.png)
