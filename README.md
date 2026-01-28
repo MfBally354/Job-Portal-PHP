@@ -70,7 +70,8 @@ JobPortal adalah platform web-based yang dirancang untuk memudahkan pencari kerj
 
 <div align="center">
 
-![Admin Features](docs/images/admin-features.png)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/92290ac3-ac7f-4553-887b-7a220a9a505c" />
+
 
 </div>
 
@@ -106,7 +107,8 @@ JobPortal adalah platform web-based yang dirancang untuk memudahkan pencari kerj
 
 
 ### Admin Panel
-![Admin Panel](docs/screenshots/admin-panel.png)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/9efd08b1-a025-460e-b178-0f5e1f37e2f2" />
+
 
 ---
 
