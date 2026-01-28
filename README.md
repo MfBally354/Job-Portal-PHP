@@ -199,7 +199,7 @@ php -S localhost:8000
 #### 1. Clone Repository
 ```bash
 git clone https://github.com/MfBally354/Job-Portal-PHP.git
-cd job-portal
+cd job-portal-PHP
 ```
 
 #### 2. Jalankan Docker Compose
