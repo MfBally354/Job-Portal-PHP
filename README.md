@@ -226,7 +226,7 @@ Setelah instalasi, gunakan akun berikut untuk login:
 ### Admin Account
 ```
 Email: admin@jobportal.com
-Password: password123
+Password: password
 ```
 
 > ⚠️ **PENTING**: Segera ubah password default setelah login pertama!
