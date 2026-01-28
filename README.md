@@ -198,7 +198,7 @@ php -S localhost:8000
 
 #### 1. Clone Repository
 ```bash
-git clone https://github.com/MfBally354/Job-Portal.git
+git clone https://github.com/MfBally354/Job-Portal-PHP.git
 cd job-portal
 ```
 
