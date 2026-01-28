@@ -293,7 +293,7 @@ Job-Portal-PHP/
 ### Base URL
 Edit `config/constants.php`:
 ```php
-define('BASE_URL', 'http://your-domain.com/');
+define('BASE_URL', 'http://jobportal/');
 ```
 
 ### Upload Settings
