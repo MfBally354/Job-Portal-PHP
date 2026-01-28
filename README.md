@@ -331,7 +331,8 @@ define('SMTP_PASSWORD', 'your-app-password');
 - `activity_logs` - User activity logs
 
 ### Entity Relationship Diagram
-![ERD](docs/images/erd.png)
+<img width="1139" height="838" alt="image" src="https://github.com/user-attachments/assets/d570bed6-f8b9-426f-ad53-e24d3a6bd746" />
+
 
 ---
 
