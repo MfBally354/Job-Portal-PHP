@@ -154,7 +154,7 @@ JobPortal adalah platform web-based yang dirancang untuk memudahkan pencari kerj
 
 #### 1. Clone Repository
 ```bash
-git clone https://github.com/yourusername/job-portal.git
+git clone https://github.com/MfBally354/job-portal.git
 cd job-portal
 ```
 
