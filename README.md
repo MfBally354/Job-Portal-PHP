@@ -191,7 +191,7 @@ chmod 755 -R config/
 php -S localhost:8000
 
 # Atau akses via Apache/Nginx
-# http://localhost/Job-Portal
+# http://localhost/Job-Portal-PHP
 ```
 
 ### Method 2: Docker Installation
