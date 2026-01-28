@@ -442,7 +442,7 @@ copies or substantial portions of the Software.
 
 ## 👨‍💻 Authors
 
-- **Your Name** - *Initial work* - [YourGitHub](https://github.com/yourusername)
+- **Your Name** - *Initial work* - [YourGitHub](https://github.com/MfBally)
 
 ---
 
