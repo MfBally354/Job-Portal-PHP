@@ -98,7 +98,8 @@ JobPortal adalah platform web-based yang dirancang untuk memudahkan pencari kerj
 
 
 ### Dashboard Jobseeker
-![Jobseeker Dashboard](docs/screenshots/jobseeker-dashboard.png)
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/e0e0efe0-b75d-4c87-8dc8-05733932600d" />
+
 
 ### Dashboard Employer
 ![Employer Dashboard](docs/screenshots/employer-dashboard.png)
