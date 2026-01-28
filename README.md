@@ -2,7 +2,8 @@
 
 <div align="center">
 
-![JobPortal Banner](docs/images/banner.png)
+<img width="1920" height="1080" alt="Screenshot (670)" src="https://github.com/user-attachments/assets/489e8917-e9bf-4544-ac83-d6099f261689" />
+
 
 **Platform pencarian kerja modern yang menghubungkan talenta terbaik dengan perusahaan berkualitas di Indonesia**
 
