@@ -236,7 +236,7 @@ Password: password
 ## 📁 Project Structure
 
 ```
-job-portal/
+job-portal-PHP/
 ├── admin/                  # Admin panel files
 │   ├── dashboard.php
 │   ├── users.php
