@@ -18,7 +18,7 @@ if ($isDocker) {
 }
 
 define('DB_USER', 'iqbal');
-define('DB_PASS', '#semarangwhj354iqbal#');
+define('DB_PASS', '');
 define('DB_NAME', 'job_portal');
 define('DB_CHARSET', 'utf8mb4');
 
