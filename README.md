@@ -477,6 +477,6 @@ Jika project ini membantu kamu, berikan ⭐️ di GitHub!
 
 **Made with ❤️ by JobPortal Team**
 
-[Website](https://jobportal.com) • [Documentation](https://docs.jobportal.com) • [Report Bug](https://github.com/MfBally354/Job-Portal-PHP/issues) • [Request Feature](https://github.com/MfBally354/Job-Portal-PHP/issues)
+[Website](https://jobportal.com) • [Documentation](https://docs.Jobportal.com) • [Report Bug](https://github.com/MfBally354/Job-Portal-PHP/issues) • [Request Feature](https://github.com/MfBally354/Job-Portal-PHP/issues)
 
 </div>
