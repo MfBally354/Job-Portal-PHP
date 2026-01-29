@@ -204,7 +204,7 @@ cd Job-Portal-PHP
 
 #### 2. Jalankan Docker Compose
 ```bash
-docker compose up -d
+docker compose up -d --
 ```
 
 #### 3. Import Database
