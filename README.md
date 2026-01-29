@@ -175,7 +175,7 @@ Edit file `config/database.php`:
 ```php
 define('DB_HOST', '127.0.0.1');
 define('DB_USER', 'root');
-define('DB_PASS', '');
+define('DB_PASS', '[Masuk]');
 define('DB_NAME', 'job_portal');
 ```
 
