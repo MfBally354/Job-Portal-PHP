@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Web Server (PHP + Apache)
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: jobportal_web
+    ports:
+      - "8091:80"
+    volumes:
+      - ./:/var/www/html
+      - ./assets/uploads:/var/www/html/assets/uploads
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    depends_on:
+      - db
+    networks:
+      - jobportal_network
+    restart: unless-stopped
+
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    container_name: jobportal_db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: job_portal
+      MYSQL_USER: jobportal_user
+      MYSQL_PASSWORD: jobportal_pass
+    volumes:
+      - jobportal_db_data:/var/lib/mysql
+      - ./database_complete.sql:/docker-entrypoint-initdb.d/database_complete.sql
+    networks:
+      - jobportal_network
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+
+  # phpMyAdmin (Optional - untuk management database)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: jobportal_phpmyadmin
+    ports:
+      - "8092:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root_password
+      UPLOAD_LIMIT: 50M
+    depends_on:
+      - db
+    networks:
+      - jobportal_network
+    restart: unless-stopped
+
+volumes:
+  jobportal_db_data:
+    driver: local
+
+networks:
+  jobportal_network:
+    driver: bridge
