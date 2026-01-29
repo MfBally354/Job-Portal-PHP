@@ -469,7 +469,7 @@ SOFTWARE.
 
 Butuh bantuan? Hubungi kami:
 
-- 📧 Email: iqbalguntur313@gmail
+- 📧 Email: iqbalguntur313@gmail.com
 - 💬 Discord: [Join our server](https://discord.gg/jobportal)
 - 🐛 Issues: [GitHub Issues](https://github.com/MfBally354/Job-Portal-PHP/issues)
 - 📖 Docs: [Documentation](https://docs.jobportal.com)
