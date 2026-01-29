@@ -442,7 +442,7 @@ copies or substantial portions of the Software.
 
 ## 👨‍💻 Authors
 
-- **Your Name** - *Initial work* - [MfBally354](https://github.com/MfBally354)
+- **Iqbal Guntur** - *Initial work* - [MfBally354](https://github.com/MfBally354)
 
 ---
 
