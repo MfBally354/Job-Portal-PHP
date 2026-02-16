@@ -1,11 +1,12 @@
 # ================================================
-# JobPortal - Docker Compose (Connect to FlintGo MySQL)
+# JobPortal - Docker Compose (Shared MySQL)
+# Menggunakan MySQL & phpMyAdmin yang sudah ada
 # ================================================
 
 version: '3.9'
 
 services:
-  # Web Server Only
+  # Web Server Only (PHP 8.2 + Apache)
   web:
     build:
       context: .
@@ -13,7 +14,7 @@ services:
     container_name: jobportal_web
     restart: unless-stopped
     ports:
-      - "8093:80"
+      - "8093:80"  # Port berbeda dari phpMyAdmin existing
     volumes:
       - ./:/var/www/html
       - ./assets/uploads:/var/www/html/assets/uploads
@@ -21,13 +22,15 @@ services:
       - APACHE_DOCUMENT_ROOT=/var/www/html
       - PHP_UPLOAD_MAX_FILESIZE=10M
       - PHP_POST_MAX_SIZE=10M
-      - DB_HOST=flintgo-mysql
-      - DB_PORT=3306
+      # Database connection ke existing MySQL
+      - DB_HOST=host.docker.internal  # Akses MySQL di host
+      - DB_PORT=3307
       - DB_NAME=job_portal
       - DB_USER=jobportal_user
       - DB_PASS=jobportal_pass
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
-      - flintgo_flintgo-network
       - jobportal_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
@@ -36,12 +39,8 @@ services:
       retries: 3
       start_period: 10s
 
+# Networks
 networks:
-  # Network internal untuk JobPortal
   jobportal_network:
     driver: bridge
     name: jobportal_network
-  
-  # Connect ke network FlintGo yang sudah ada
-  flintgo_flintgo-network:
-    external: true

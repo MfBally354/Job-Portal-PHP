@@ -1,5 +1,7 @@
 # ================================================
-# JobPortal - Docker Compose (Connect to FlintGo MySQL)
+# JobPortal - Docker Compose (External Network)
+# Connect ke MySQL existing via Docker network
+# Untuk MySQL yang jalan di Docker network yang sama
 # ================================================
 
 version: '3.9'
@@ -21,13 +23,14 @@ services:
       - APACHE_DOCUMENT_ROOT=/var/www/html
       - PHP_UPLOAD_MAX_FILESIZE=10M
       - PHP_POST_MAX_SIZE=10M
-      - DB_HOST=flintgo-mysql
-      - DB_PORT=3306
+      # Ganti 'mysql_container_name' dengan nama container MySQL kamu
+      - DB_HOST=mysql_container_name
+      - DB_PORT=3306  # Internal port
       - DB_NAME=job_portal
       - DB_USER=jobportal_user
       - DB_PASS=jobportal_pass
     networks:
-      - flintgo_flintgo-network
+      - external_network  # Nama network yang sama dengan MySQL
       - jobportal_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/"]
@@ -37,11 +40,12 @@ services:
       start_period: 10s
 
 networks:
-  # Network internal untuk JobPortal
+  # Network baru untuk internal
   jobportal_network:
     driver: bridge
     name: jobportal_network
   
-  # Connect ke network FlintGo yang sudah ada
-  flintgo_flintgo-network:
+  # Connect ke network existing MySQL
+  external_network:
     external: true
+    name: your_existing_network_name  # Ganti dengan nama network MySQL kamu
